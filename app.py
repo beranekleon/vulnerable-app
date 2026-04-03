@@ -1,10 +1,14 @@
-from flask import Flask
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
 @app.route("/")
-def hello_world():
-    return "<h1>Hello World!</h1><p>App online.</p>"
+def home():
+    return render_template("landing.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    return render_template("login.html")
 
 if __name__ == "__main__":
     app.run()
