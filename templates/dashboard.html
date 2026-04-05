@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dashboard</title>
+</head>
+
+<body>
+    <div style="text-align: center; margin-top: 50px;">
+        <h1>Welcome to Your Secure Dashboard, {{ username }}!</h1>
+        <hr style="width: 50%;">
+
+        <p style="color: green; font-weight: bold;">
+            Authentication Verified
+        </p>
+
+        <p>This page is only visible because your session is active.</p>
+
+        <br><br>
+
+        <form action="/logout">
+            <button type="submit">Sign Out</button>
+        </form>
+    </div>
+</body>
+
+</html>

@@ -9,7 +9,7 @@
 struct login_data {
     char password_buffer[8];
     int is_authenticated;
-    char padding[64]; // This "catches" the extra 'a's so they don't hit the Return Address
+    char padding[64]; // This "catches" the extra overflow so it doesn't hit the Return Address
 };
 #pragma pack(pop)
 
