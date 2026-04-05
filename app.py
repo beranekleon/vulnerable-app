@@ -1,5 +1,6 @@
 import ctypes
 from flask import Flask, render_template, request, redirect, url_for, session
+import sqlite3
 
 app = Flask(__name__)
 
@@ -15,6 +16,11 @@ login_lib.verify_login.restype = ctypes.c_int
 # Flask needs a secret key to encrypt session cookies
 # In development, any string works, but in prodcution, you need a random, complex key
 app.secret_key = 'super_secret_key'
+
+def get_db_connection():
+    connection = sqlite3.connect('app.db')
+    connection.row_factory = sqlite3.Row # Allows accessing columns by name
+    return connection
 
 # Route to landing page
 @app.route("/")
@@ -54,8 +60,11 @@ def dashboard():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     
-    # If authenticated, show the login page
-    return render_template("dashboard.html", username = session.get('username'))
+    # If authenticated, show the dashboard page
+    connection = get_db_connection()
+    products = connection.execute('SELECT * FROM products ORDER BY sales_count DESC LIMIT 3').fetchall()
+    connection.close()
+    return render_template("dashboard.html", username = session.get('username'),products=products   )
 
 # Logout Route
 @app.route("/logout")
