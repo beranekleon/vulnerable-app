@@ -38,6 +38,9 @@
                     <th>Product Name</th>
                     <th>Price</th>
                     <th>Units Sold</th>
+                    {% if username == 'admin' %}
+                    <th style="color: #cc0000;">Supplier Hash (INTERNAL)</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -46,6 +49,9 @@
                     <td>{{ product['name'] }}</td>
                     <td>${{ product['price'] }}</td>
                     <td>{{ product['sales_count'] }}</td>
+                    {% if username == 'admin' %}
+                    <td style="font-family: monospace; font-size: 0.9em;">{{ product['supplier_code'] }}</td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

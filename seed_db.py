@@ -25,27 +25,28 @@ def seed():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             price REAL NOT NULL,
-            sales_count INTEGER DEFAULT 0
+            sales_count INTEGER DEFAULT 0,
+            supplier_code TEXT
         )
     ''')
 
-    # Insert Mock Users (with weak MD5 hashes)
+    # Insert Mock Users (Plaintext passwords for legacy system)
     users = [
-        ('admin', md5_hash('admin')),
-        ('user', md5_hash('password'))
+        ('admin', 'admin'),
+        ('user', 'password')
     ]
 
     cursor.executemany('INSERT INTO users (username, password) VALUES (?, ?)', users)
 
-    # Insert Top Selling Products
+    # Insert Top Selling Products (with MD5 hashed supplier codes)
     products = [
-        ('Cyber-Shield Firewall', 299.99, 150),
-        ('Encrypted USB Drive', 44.99, 85),
-        ('Legacy Server Rack', 1199.99, 12),
-        ('Retro Mechanical Keyboard', 119.99, 210),
-        ('Packet Sniffer Pro', 89.99, 64)
+        ('Cyber-Shield Firewall', 299.99, 150, md5_hash('ONE')),
+        ('Encrypted USB Drive', 44.99, 85, md5_hash('TWO')),
+        ('Legacy Server Rack', 1199.99, 12, md5_hash('ONE')),
+        ('Retro Mechanical Keyboard', 119.99, 210, md5_hash('THREE')),
+        ('Packet Sniffer Pro', 89.99, 64, md5_hash('FOUR'))
     ]
-    cursor.executemany('INSERT INTO products (name, price, sales_count) VALUES (?, ?, ?)', products)
+    cursor.executemany('INSERT INTO products (name, price, sales_count, supplier_code) VALUES (?, ?, ?, ?)', products)
 
     # Commit data and close connection
     connection.commit()

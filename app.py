@@ -8,9 +8,8 @@ app = Flask(__name__)
 login_lib = ctypes.CDLL('./legacy-codebase/login_logic.dll')
 
 # Configure the legacy library's input and output types
-# 'argtypes' defines what we send to C (a char pointer)
-# 'restype' defines what we get back (an integer)
-login_lib.verify_login.argtypes = [ctypes.c_char_p]
+# 'argtypes' defines what we send to C (input_password, expected_password)
+login_lib.verify_login.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 login_lib.verify_login.restype = ctypes.c_int
 
 # Flask needs a secret key to encrypt session cookies
@@ -31,25 +30,30 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
+        username = request.form.get("username")
         password = request.form.get("password")
         
-        # Convert Python string to bytes for C compatibility
-        password_bytes = password.encode('utf-8')
-        
-        # Call the C function
-        result = login_lib.verify_login(password_bytes)
-        
-        if result != 0:
-            # Handle successful login
-            # Store the login state in the session cookie
-            session['logged_in'] = True
-            session['username'] = request.form.get("username")
+        # Fetch the stored password from the database
+        connection = get_db_connection()
+        user = connection.execute('SELECT password FROM users WHERE username = ?', (username,)).fetchone()
+        connection.close()
 
-            # Redirect the user to the dashboard route
-            return redirect(url_for('dashboard'))
-        else:
-            session.clear()
-            return "<h1>Access Denied</h1><p>Password incorrect.</p>"
+        if user:
+            # Call the C function with the raw user input and the plaintext password from DB
+            # The buffer overflow will only happen if the user's password input is > 8 chars.
+            result = login_lib.verify_login(
+                password.encode('utf-8'), 
+                user['password'].encode('utf-8')
+            )
+            
+            if result != 0:
+                # Handle successful login
+                session['logged_in'] = True
+                session['username'] = username
+                return redirect(url_for('dashboard'))
+        
+        session.clear()
+        return "<h1>Access Denied</h1><p>Invalid credentials.</p>"
     return render_template("login.html")
 
 # Route to dashboard page

@@ -13,7 +13,7 @@ struct login_data {
 };
 #pragma pack(pop)
 
-int verify_login(const char *input_password) {
+int verify_login(const char *input_password, const char *expected_password) {
     struct login_data data;
     data.is_authenticated = 0; // Initialize to locked
     
@@ -23,9 +23,10 @@ int verify_login(const char *input_password) {
     strcpy(data.password_buffer, input_password);
 
     // LEGITIMATE CHECK:
+    // We compare against the password retrieved from the database.
     // Even if this check fails, is_authenticated might already be non-zero 
     // due to the overflow above.
-    if (strcmp(data.password_buffer, "secret") == 0) {
+    if (strcmp(data.password_buffer, expected_password) == 0) {
         data.is_authenticated = 1;
     }
 
