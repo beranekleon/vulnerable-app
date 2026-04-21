@@ -14,6 +14,12 @@
             Authentication Verified
         </p>
 
+        {% if username == 'admin' %}
+        <div style="background-color: #ffe5e5; border: 2px solid #cc0000; padding: 10px; margin: 20px auto; width: 60%; color: #cc0000; font-weight: bold; border-radius: 5px;">
+            ADMINISTRATIVE CONSOLE: INTERNAL USE ONLY
+        </div>
+        {% endif %}
+
         <p>This page is only visible because your session is active.</p>
 
         <br>
