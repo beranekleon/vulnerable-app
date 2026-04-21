@@ -66,6 +66,34 @@ def dashboard():
     connection.close()
     return render_template("dashboard.html", username = session.get('username'),products=products   )
 
+@app.route("/search")
+def search():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    query_param = request.args.get('q', '')
+    
+    conn = get_db_connection()
+    
+    # VULNERABLE CODE: Direct string formatting allows the user to 
+    # "break out" of the query and execute their own commands.
+    unsafe_query = f"SELECT name, price, sales_count FROM products WHERE name LIKE '%{query_param}%'"
+    
+    print(f"Executing Query: {unsafe_query}") # Helpful for you to see the injection in the console
+    
+    try:
+        results = conn.execute(unsafe_query).fetchall()
+    except Exception as e:
+        # If the attacker writes bad SQL, show the error (classic 'Error-Based SQLi')
+        return f"Database Error: {str(e)}"
+    finally:
+        conn.close()
+
+    return render_template("dashboard.html", 
+                           username=session.get('username'), 
+                           products=results, 
+                           search_term=query_param)
+
 # Logout Route
 @app.route("/logout")
 def logout():
