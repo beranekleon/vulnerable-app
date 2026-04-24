@@ -1,8 +1,5 @@
 import sqlite3
-import hashlib
-
-def md5_hash(text):
-    return hashlib.md5(text.encode()).hexdigest()
+from werkzeug.security import generate_password_hash
 
 def seed():
     connection = sqlite3.connect('app.db')
@@ -30,21 +27,22 @@ def seed():
         )
     ''')
 
-    # Insert Mock Users (Plaintext passwords for legacy system)
+    # SECURE: Store passwords as salted hashes
     users = [
-        ('admin', 'admin'),
-        ('user', 'password')
+        ('admin', generate_password_hash('admin')),
+        ('user', generate_password_hash('password'))
     ]
 
     cursor.executemany('INSERT INTO users (username, password) VALUES (?, ?)', users)
 
-    # Insert Top Selling Products (with MD5 hashed supplier codes)
+    # SECURE: We use a placeholder for supplier codes. 
+    # In Phase 4, we will upgrade these to secure SHA-256 hashes.
     products = [
-        ('Cyber-Shield Firewall', 299.99, 150, md5_hash('ONE')),
-        ('Encrypted USB Drive', 44.99, 85, md5_hash('TWO')),
-        ('Legacy Server Rack', 1199.99, 12, md5_hash('ONE')),
-        ('Retro Mechanical Keyboard', 119.99, 210, md5_hash('THREE')),
-        ('Packet Sniffer Pro', 89.99, 64, md5_hash('FOUR'))
+        ('Cyber-Shield Firewall', 299.99, 150, 'SUPPLIER-ALPHA-99'),
+        ('Encrypted USB Drive', 44.99, 85, 'SUPPLIER-BETA-12'),
+        ('Legacy Server Rack', 1199.99, 12, 'SUPPLIER-GAMMA-01'),
+        ('Retro Mechanical Keyboard', 119.99, 210, 'SUPPLIER-DELTA-88'),
+        ('Packet Sniffer Pro', 89.99, 64, 'SUPPLIER-EPSILON-44')
     ]
     cursor.executemany('INSERT INTO products (name, price, sales_count, supplier_code) VALUES (?, ?, ?, ?)', products)
 
