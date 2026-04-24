@@ -79,14 +79,15 @@ def search():
     
     conn = get_db_connection()
     
-    # VULNERABLE CODE: Direct string formatting allows the user to 
-    # "break out" of the query and execute their own commands.
-    unsafe_query = f"SELECT name, price, sales_count, supplier_code FROM products WHERE name LIKE '%{query_param}%'"
+    # SECURE CODE: Using a parameterized query (?) ensures that the 
+    # database treats the input strictly as a string, not as a command.
+    safe_query = "SELECT name, price, sales_count, supplier_code FROM products WHERE name LIKE ?"
+    search_pattern = f"%{query_param}%"
     
-    print(f"Executing Query: {unsafe_query}") # Helpful for you to see the injection in the console
+    print(f"Executing Secure Query for pattern: {search_pattern}")
     
     try:
-        results = conn.execute(unsafe_query).fetchall()
+        results = conn.execute(safe_query, (search_pattern,)).fetchall()
     except Exception as e:
         # If the attacker writes bad SQL, show the error (classic 'Error-Based SQLi')
         return f"Database Error: {str(e)}"
