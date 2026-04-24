@@ -31,7 +31,6 @@ def login():
         connection.close()
 
         # SECURE AUTH: Compare the input with the stored salted hash in memory-safe Python.
-        # This replaces the legacy C library entirely.
         if user and check_password_hash(user['password'], password):
             # Handle successful login
             session['logged_in'] = True
@@ -45,16 +44,19 @@ def login():
 # Route to dashboard page
 @app.route("/dashboard")
 def dashboard():
-    # If the 'logged_in' key isn't in the session cookies, the user is not authenticated
-    # --> redirect them back to the login page
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     
-    # If authenticated, show the dashboard page
+    # SECURE ACCESS CONTROL: Define which columns are allowed based on the user's role.
+    if session.get('username') == 'admin':
+        query = 'SELECT name, price, sales_count, supplier_code FROM products ORDER BY sales_count DESC LIMIT 3'
+    else:
+        query = 'SELECT name, price, sales_count FROM products ORDER BY sales_count DESC LIMIT 3'
+
     connection = get_db_connection()
-    products = connection.execute('SELECT * FROM products ORDER BY sales_count DESC LIMIT 3').fetchall()
+    products = connection.execute(query).fetchall()
     connection.close()
-    return render_template("dashboard.html", username = session.get('username'),products=products   )
+    return render_template("dashboard.html", username = session.get('username'), products=products)
 
 @app.route("/search")
 def search():
@@ -63,19 +65,18 @@ def search():
 
     query_param = request.args.get('q', '')
     
+    # SECURE ACCESS CONTROL: Define which columns are allowed based on the user's role.
+    if session.get('username') == 'admin':
+        safe_query = "SELECT name, price, sales_count, supplier_code FROM products WHERE name LIKE ?"
+    else:
+        safe_query = "SELECT name, price, sales_count FROM products WHERE name LIKE ?"
+
     conn = get_db_connection()
-    
-    # SECURE CODE: Using a parameterized query (?) ensures that the 
-    # database treats the input strictly as a string, not as a command.
-    safe_query = "SELECT name, price, sales_count, supplier_code FROM products WHERE name LIKE ?"
     search_pattern = f"%{query_param}%"
-    
-    print(f"Executing Secure Query for pattern: {search_pattern}")
     
     try:
         results = conn.execute(safe_query, (search_pattern,)).fetchall()
     except Exception as e:
-        # If the attacker writes bad SQL, show the error (classic 'Error-Based SQLi')
         return f"Database Error: {str(e)}"
     finally:
         conn.close()
@@ -88,7 +89,6 @@ def search():
 # Logout Route
 @app.route("/logout")
 def logout():
-    # Clear the session data
     session.clear()
     return redirect(url_for('login'))
 
