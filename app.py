@@ -53,7 +53,7 @@ def login():
                 return redirect(url_for('dashboard'))
         
         session.clear()
-        return "<h1>Access Denied</h1><p>Invalid credentials.</p>"
+        return render_template("login.html", error="Access Denied: Invalid username or password.")
     return render_template("login.html")
 
 # Route to dashboard page
@@ -81,7 +81,7 @@ def search():
     
     # VULNERABLE CODE: Direct string formatting allows the user to 
     # "break out" of the query and execute their own commands.
-    unsafe_query = f"SELECT name, price, sales_count FROM products WHERE name LIKE '%{query_param}%'"
+    unsafe_query = f"SELECT name, price, sales_count, supplier_code FROM products WHERE name LIKE '%{query_param}%'"
     
     print(f"Executing Query: {unsafe_query}") # Helpful for you to see the injection in the console
     

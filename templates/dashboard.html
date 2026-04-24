@@ -3,19 +3,20 @@
 
 <head>
     <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
-    <div style="text-align: center; margin-top: 50px;">
+    <div class="container">
         <h1>Welcome to Your Secure Dashboard, {{ username }}!</h1>
         <hr style="width: 50%;">
 
-        <p style="color: green; font-weight: bold;">
+        <p class="status-verified">
             Authentication Verified
         </p>
 
         {% if username == 'admin' %}
-        <div style="background-color: #ffe5e5; border: 2px solid #cc0000; padding: 10px; margin: 20px auto; width: 60%; color: #cc0000; font-weight: bold; border-radius: 5px;">
+        <div class="admin-banner">
             ADMINISTRATIVE CONSOLE: INTERNAL USE ONLY
         </div>
         {% endif %}
@@ -24,22 +25,22 @@
 
         <br>
         
-        <div style="margin-bottom: 30px; text-align: center;">
-            <form action="/search" method="GET">
-                <input type="text" name="q" placeholder="Search for products..." style="width: 300px; padding: 5px;">
+        <div class="search-box">
+            <form action="/search" method="GET" style="flex-direction: row;">
+                <input type="text" name="q" placeholder="Search for products..." value="{{ search_term if search_term }}">
                 <button type="submit">Search</button>
             </form>
         </div>
 
         <h3>Top Selling Products</h3>
-        <table border="1" style="width: 80%; margin: 0 auto; text-align: left;">
+        <table>
             <thead>
                 <tr>
                     <th>Product Name</th>
                     <th>Price</th>
                     <th>Units Sold</th>
                     {% if username == 'admin' %}
-                    <th style="color: #cc0000;">Supplier Hash (INTERNAL)</th>
+                    <th style="color: #ffcccc;">Supplier Hash (INTERNAL)</th>
                     {% endif %}
                 </tr>
             </thead>
@@ -50,7 +51,7 @@
                     <td>${{ product['price'] }}</td>
                     <td>{{ product['sales_count'] }}</td>
                     {% if username == 'admin' %}
-                    <td style="font-family: monospace; font-size: 0.9em;">{{ product['supplier_code'] }}</td>
+                    <td style="font-family: monospace; font-size: 0.9em; color: var(--danger-color);">{{ product['supplier_code'] }}</td>
                     {% endif %}
                 </tr>
                 {% endfor %}
@@ -59,8 +60,8 @@
         
         <br>
 
-        <form action="/logout">
-            <button type="submit">Sign Out</button>
+        <form action="/logout" style="width: 200px; margin: 0 auto;">
+            <button type="submit" style="background-color: var(--secondary-color);">Sign Out</button>
         </form>
     </div>
 </body>
